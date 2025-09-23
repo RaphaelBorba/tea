@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RedisModule } from './redis/redis.module';
+import { CategoriesModule } from './categories/categories.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -16,6 +17,7 @@ import { HealthController } from './health.controller';
       }),
     }),
     RedisModule,
+    CategoriesModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
