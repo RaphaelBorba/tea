@@ -41,6 +41,8 @@ async function main() {
       title: `Post #${i + 1} in ${category.name}`,
       content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
       likeCount: 0,
+      createdAt,
+      updatedAt: createdAt,
     } as any);
   }
   const createdPosts = await PostModel.insertMany(postsToInsert, { ordered: false });
