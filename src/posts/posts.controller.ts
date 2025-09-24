@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Headers, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, NotFoundException } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { PostIdParams } from './dto/post-id.params';
 
 @Controller('posts')
 export class PostsController {
@@ -14,8 +15,10 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getOne(@Param('id') id: string) {
-    return { id };
+  async getOne(@Param() params: PostIdParams) {
+    const post = await this.service.getById(params.id);
+    if (!post) throw new NotFoundException('Post not found');
+    return post;
   }
 }
 

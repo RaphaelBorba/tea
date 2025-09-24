@@ -19,6 +19,21 @@ export class PostsService {
       content: dto.content,
     } as any);
   }
+
+  async getById(id: string) {
+    const doc = await this.repo.findByIdLean(id);
+    if (!doc) return null;
+    return {
+      id: doc._id,
+      authorId: doc.authorId,
+      categoryId: doc.categoryId,
+      title: doc.title,
+      content: doc.content,
+      likeCount: doc.likeCount,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    };
+  }
 }
 
 

@@ -19,6 +19,10 @@ export class PostsRepository {
     const created = await this.postModel.create(doc as any);
     return created.toObject();
   }
+
+  async findByIdLean(id: string) {
+    return this.postModel.findById(id).lean();
+  }
 }
 
 
