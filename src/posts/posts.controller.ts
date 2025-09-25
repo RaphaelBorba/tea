@@ -20,6 +20,16 @@ export class PostsController {
     if (!post) throw new NotFoundException('Post not found');
     return post;
   }
+
+  @Post(':id/like')
+  async like(@Headers('x-user-id') userId: string, @Param() params: PostIdParams) {
+    return this.service.like(userId, params.id);
+  }
+
+  @Post(':id/dislike')
+  async dislike(@Headers('x-user-id') userId: string, @Param() params: PostIdParams) {
+    return this.service.dislike(userId, params.id);
+  }
 }
 
 

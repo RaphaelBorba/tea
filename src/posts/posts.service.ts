@@ -34,6 +34,22 @@ export class PostsService {
       updatedAt: doc.updatedAt,
     };
   }
+
+  async like(userId: string, id: string) {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid id');
+    const post = await this.repo.findByIdLean(id);
+    if (!post) throw new BadRequestException('Post not found');
+    const res = await this.repo.likePost(userId, id);
+    return { ok: true, liked: res.added };
+  }
+
+  async dislike(userId: string, id: string) {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid id');
+    const post = await this.repo.findByIdLean(id);
+    if (!post) throw new BadRequestException('Post not found');
+    const res = await this.repo.dislikePost(userId, id);
+    return { ok: true, disliked: res.removed };
+  }
 }
 
 
