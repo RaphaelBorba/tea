@@ -26,6 +26,20 @@ export class PostsRepository {
     return this.postModel.findById(id).lean();
   }
 
+  async findFeed(params: { categoryId?: string; skip: number; limit: number }) {
+    const filter: any = {};
+    if (params.categoryId) filter.categoryId = new Types.ObjectId(params.categoryId);
+    const cursor = this.postModel
+      .find(filter)
+      .sort({ likeCount: -1, createdAt: -1 })
+      .skip(params.skip)
+      .limit(params.limit)
+      .lean();
+    const items = await cursor.exec();
+    const total = await this.postModel.countDocuments(filter);
+    return { items, total };
+  }
+
   async likePost(userId: string, postId: string) {
     const postObjectId = new Types.ObjectId(postId);
     const created = await this.likeModel.findOneAndUpdate(
@@ -34,7 +48,7 @@ export class PostsRepository {
       { upsert: true, new: false },
     );
     if (created == null) {
-      // like inserted (new: false means previous doc not returned on insert)
+      
       await this.postModel.updateOne({ _id: postObjectId }, { $inc: { likeCount: 1 } });
       return { added: true } as const;
     }

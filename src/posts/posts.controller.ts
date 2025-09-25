@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Headers, Param, Post, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, Post, NotFoundException, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PostIdParams } from './dto/post-id.params';
+import { FeedQueryDto } from './dto/feed-query.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -29,6 +30,11 @@ export class PostsController {
   @Post(':id/dislike')
   async dislike(@Headers('x-user-id') userId: string, @Param() params: PostIdParams) {
     return this.service.dislike(userId, params.id);
+  }
+
+  @Get()
+  async feed(@Query() query: FeedQueryDto) {
+    return this.service.feed(query);
   }
 }
 
