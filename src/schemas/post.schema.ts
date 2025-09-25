@@ -21,5 +21,6 @@ export const PostSchema = new Schema<Post>({
 
 PostSchema.index({ createdAt: -1 });
 PostSchema.index({ likeCount: -1, createdAt: -1 });
+PostSchema.index({ categoryId: 1, likeCount: -1, createdAt: -1 });
 
 
