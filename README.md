@@ -46,6 +46,15 @@ Copy `.env.example` to `.env` if needed.
 ## Authentication
 All routes require the header `X-User-Id: <string>` except `/health` (public).
 
+## Rate limiting
+- Global rate limiting is enforced per user and per route using Redis counters for high accuracy and scalability.
+  - Each unique combination of user (from `X-User-Id` header) and route is tracked.
+  - This approach helps prevent abuse while allowing fair access for all users.
+  - (Future improvements could include additional metrics, such as per-IP or global user-only limits.)
+- Defaults: 100 requests per 60 seconds per route and user (header `X-User-Id`).
+- On exceed, API returns `429 Too Many Requests`.
+- Note: For production environments, it's recommended to implement rate limiting at the API gateway level (e.g., using Cloudflare or AWS API Gateway) to prevent excessive load on the main server.
+
 ## Health
 ```
 GET /health
@@ -65,6 +74,7 @@ Response:
 ### Categories
 ```
 GET /categories
+Headers: X-User-Id
 ```
 Response:
 ```json
@@ -94,6 +104,7 @@ Response (201):
 ### Get post by id
 ```
 GET /posts/:id
+Headers: X-User-Id
 ```
 - 200: post JSON
 - 404: not found
@@ -114,6 +125,7 @@ Response:
 ### Feed (with filters and scoring)
 ```
 GET /posts?categoryId=<id>&page=1&limit=10&fresh=true|false
+Headers: X-User-Id
 ```
 Response:
 ```json
@@ -167,7 +179,6 @@ Global exception filter returns consistent JSON for errors. 4xx keep the proper 
 
 ## Trade-offs / next steps
 - Replace `KEYS` with `SCAN` for cache invalidation
-- Optional: rate limiting with Redis
 - Optional: background worker to pre-compute hot posts (sorted sets)
 - Optional: cursor-based pagination
 

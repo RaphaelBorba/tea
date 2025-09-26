@@ -8,6 +8,7 @@ import { RedisModule } from './redis/redis.module';
 import { CategoriesModule } from './categories/categories.module';
 import { PostsModule } from './posts/posts.module';
 import { AuthGuard } from './auth/auth.guard';
+import { RateLimitGuard } from './auth/rate-limit.guard';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -29,6 +30,10 @@ import { HealthController } from './health.controller';
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
     },
   ],
 })
