@@ -1,98 +1,180 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Relevance Feed API (NestJS + MongoDB + Redis)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Production-like API that serves a post feed ranked by relevance (and optionally, freshness). Users can create posts, list posts with filters, like/dislike posts, and fetch categories.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Tech stack
+- NestJS (TypeScript)
+- MongoDB (Mongoose)
+- Redis (ioredis)
+- Docker Compose
 
-## Description
+## Getting started (local)
+1. Install deps:
+   ```bash
+   npm ci
+   ```
+2. Build:
+   ```bash
+   npm run build
+   ```
+3. Start infra (from `api/`):
+   ```bash
+   docker-compose up -d
+   ```
+4. Seed database:
+   ```bash
+   npm run seed
+   ```
+5. Start API (dev):
+   ```bash
+   npm run start:dev
+   ```
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
+## Getting started (Docker only)
+From `api/`:
 ```bash
-$ npm install
+docker-compose up -d
+```
+API will be available at `http://localhost:3000`.
+
+## Environment variables
+Copy `.env.example` to `.env` if needed.
+- `MONGODB_URI` (default: `mongodb://localhost:27017/tea_feed`)
+- `REDIS_URL` (default: `redis://localhost:6379`)
+- `PORT` (default: `3000`)
+
+## Authentication
+All routes require the header `X-User-Id: <string>` except `/health` (public).
+
+## Health
+```
+GET /health
+```
+Response:
+```json
+{ "status": "ok", "mongo": "up", "redis": "up" }
 ```
 
-## Compile and run the project
+## Data model (Mongo)
+- Category: `{ _id, name, createdAt, updatedAt }`
+- Post: `{ _id, authorId, categoryId, title, content, likeCount, createdAt, updatedAt }`
+- Like: `{ _id, userId, postId, createdAt }` (unique on `{ userId, postId }`)
 
-```bash
-# development
-$ npm run start
+## Endpoints
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+### Categories
+```
+GET /categories
+```
+Response:
+```json
+[{ "id": "...", "name": "Technology" }]
 ```
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+### Create post
+```
+POST /posts
+Headers: X-User-Id
+Body: { "categoryId": "<mongoId>", "title": "...", "content": "..." }
+```
+Response (201):
+```json
+{
+  "id": "...",
+  "authorId": "user_123",
+  "categoryId": "...",
+  "title": "...",
+  "content": "...",
+  "likeCount": 0,
+  "createdAt": "...",
+  "updatedAt": "..."
+}
 ```
 
-## Deployment
+### Get post by id
+```
+GET /posts/:id
+```
+- 200: post JSON
+- 404: not found
+- 400: invalid id
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+### Like / Dislike (idempotent)
+```
+POST /posts/:id/like
+POST /posts/:id/dislike
+Headers: X-User-Id
+```
+Response:
+```json
+{ "ok": true, "liked": true }
+{ "ok": true, "disliked": true }
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Feed (with filters and scoring)
+```
+GET /posts?categoryId=<id>&page=1&limit=10&fresh=true|false
+```
+Response:
+```json
+{
+  "page": 1,
+  "limit": 10,
+  "total": 5200,
+  "items": [ { "id": "...", "title": "...", "likeCount": 42, "score": 1.23, "createdAt": "..." } ]
+}
+```
+Query params:
+- `categoryId` (optional): filter by category
+- `page` (default 1), `limit` (default 10, max 50)
+- `fresh` (default false): if true, re-rank by score
 
-## Resources
+## Scoring (relevance)
+We combine popularity and freshness:
+- Popularity (logarithmic): `base = log10(likeCount + 1)`
+- Freshness decay: `decay = 0.5^(ageHours / halfLife)` (half-life ≈ 24h)
+- Score: `score = base * decay`
 
-Check out a few resources that may come in handy when working with NestJS:
+Behavior:
+- `fresh=false`: decay effectively disabled → sorts by `likeCount` desc then `createdAt` desc
+- `fresh=true`: re-ranks by computed score
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Unit tests: see `src/posts/score.util.spec.ts`.
 
-## Support
+## Redis caching
+- Feed pages (TTL 60s)
+  - Key: `cache:feed:cat:{categoryId|all}:fresh:{0|1}:page:{page}:limit:{limit}`
+  - Invalidation on like/dislike: clear category feed keys and global feed keys
+- Post by id (TTL 300s)
+  - Key: `cache:post:{postId}`
+  - Invalidation on like/dislike
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Note: cache invalidation currently uses `KEYS` for simplicity; in production prefer `SCAN`.
 
-## Stay in touch
+## Indexes
+- `createdAt` (sort by recent)
+- `{ likeCount: -1, createdAt: -1 }` (relevance order)
+- `{ categoryId: 1, likeCount: -1, createdAt: -1 }` (category feed)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Seeding
+```
+npm run seed
+```
+Creates 12 categories, ~5200 posts, and likes with a heavy‑tailed distribution (some “hot” posts).
 
-## License
+## Error handling
+Global exception filter returns consistent JSON for errors. 4xx keep the proper status/message; 500 logs the error and returns a structured body.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Trade-offs / next steps
+- Replace `KEYS` with `SCAN` for cache invalidation
+- Optional: rate limiting with Redis
+- Optional: background worker to pre-compute hot posts (sorted sets)
+- Optional: cursor-based pagination
+
+## Scripts
+```bash
+npm run build       # compile to dist
+npm run start:dev   # dev server
+npm run seed        # populate database
+npm test            # unit tests (scoring)
+```
