@@ -8,11 +8,13 @@ services:
     depends_on:
       - mongodb
       - redis
+    env_file:
+      - .env
     environment:
-      - PORT=3000
-      - MONGODB_URI=mongodb://mongodb:27017/tea_feed
-      - REDIS_URL=redis://redis:6379
-      - SYNC_INDEXES=true
+      - PORT=${PORT}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/tea_feed}
+      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
+      - SYNC_INDEXES=${SYNC_INDEXES:-true}
     ports:
       - "3000:3000"
     healthcheck:

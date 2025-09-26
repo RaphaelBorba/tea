@@ -17,7 +17,7 @@ Production-like API that serves a post feed ranked by relevance (and optionally,
    ```bash
    npm run build
    ```
-3. Start infra (from `api/`):
+3. Start infra:
    ```bash
    docker-compose up -d
    ```
@@ -31,7 +31,7 @@ Production-like API that serves a post feed ranked by relevance (and optionally,
    ```
 
 ## Getting started (Docker only)
-From `api/`:
+From:
 ```bash
 docker-compose up -d
 ```
