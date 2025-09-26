@@ -162,6 +162,9 @@ Unit tests: see `src/posts/score.util.spec.ts`.
 - Post by id (TTL 300s)
   - Key: `cache:post:{postId}`
   - Invalidation on like/dislike
+- Categories list (TTL 1h)
+  - Key: `cache:categories`
+  - Invalidation when categories change (rare in this project)
 
 Note: cache invalidation currently uses `KEYS` for simplicity; in production prefer `SCAN`.
 

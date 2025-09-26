@@ -13,7 +13,7 @@ export class CategoriesService {
   ) {}
 
   async getAll() {
-    const cacheKey = 'categories';
+    const cacheKey = 'cache:categories';
     const cached = await this.redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
 
