@@ -183,9 +183,12 @@ Creates 12 categories, ~5200 posts, and likes with a heavy‑tailed distribution
 Global exception filter returns consistent JSON for errors. 4xx keep the proper status/message; 500 logs the error and returns a structured body.
 
 ## Trade-offs / next steps
-- Replace `KEYS` with `SCAN` for cache invalidation
-- Optional: background worker to pre-compute hot posts (sorted sets)
-- Optional: cursor-based pagination
+- Replace `KEYS` with `SCAN` for cache invalidation (production-safe)
+- Rate limiting at edge/proxy (Cloudflare/NGINX/Envoy) to shed load before Node
+- Background worker to pre-compute hot posts in Redis (sorted sets) and smartly update on like/dislike
+- Swagger documentation with request/response schemas and examples
+- More tests: integration/e2e/unit for endpoints and cache invalidation paths
+- Observability: structured logging, request IDs, metrics (Prometheus)
 
 ## Scripts
 ```bash
