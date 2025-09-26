@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: api/package-lock.json
+      - name: Install
+        working-directory: api
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        working-directory: api
+        run: npm run lint --if-present
+      - name: Build
+        working-directory: api
+        run: npm run build
+      - name: Test
+        working-directory: api
+        run: npm test -- --ci --reporters=default --reporters=jest-junit
+

@@ -36,12 +36,14 @@ From `api/`:
 docker-compose up -d
 ```
 API will be available at `http://localhost:3000`.
+The API service includes an HTTP healthcheck and sets `SYNC_INDEXES=true` in compose to ensure indexes exist at boot.
 
 ## Environment variables
 Copy `.env.example` to `.env` if needed.
 - `MONGODB_URI` (default: `mongodb://localhost:27017/tea_feed`)
 - `REDIS_URL` (default: `redis://localhost:6379`)
 - `PORT` (default: `3000`)
+ - `SYNC_INDEXES` (default: `false`) — if `true`, app will call `syncIndexes()` on boot
 
 ## Authentication
 All routes require the header `X-User-Id: <string>` except `/health` (public).

@@ -12,8 +12,14 @@ services:
       - PORT=3000
       - MONGODB_URI=mongodb://mongodb:27017/tea_feed
       - REDIS_URL=redis://redis:6379
+      - SYNC_INDEXES=true
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   mongodb:
     image: mongo:7
     container_name: tea_mongodb

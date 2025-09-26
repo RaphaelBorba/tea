@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { PostSchema } from '../schemas/post.schema';
+import { CategorySchema } from '../schemas/category.schema';
+import { IndexSyncService } from '../index-sync.service';
+import { LikeSchema } from '../schemas/like.schema';
 import { PostsController } from './posts.controller';
 import { PostsService } from './posts.service';
 import { PostsRepository } from './posts.repository';
-import { PostSchema } from '../schemas/post.schema';
-import { CategorySchema } from '../schemas/category.schema';
-import { LikeSchema } from '../schemas/like.schema';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { LikeSchema } from '../schemas/like.schema';
     ]),
   ],
   controllers: [PostsController],
-  providers: [PostsService, PostsRepository],
+  providers: [PostsService, PostsRepository, IndexSyncService],
 })
 export class PostsModule {}
 
